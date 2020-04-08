@@ -138,3 +138,38 @@ We use mapStateToProps when we export the component through redux' function 'con
 ```javascript
 export default connect(mapStateToProps, {fetchUsers})(UserHeader);
 ```
+
+##  lowdash library -> memoize
+
+```bash
+npm install --save lodash
+```
+
+
+```javascript
+import _ from 'lodash'
+
+const memoizadGetUser = _.memoize(getUser)
+```
+
+This will wrap our getUser function and create a new function named memoizedGetUser. We can use this function when we have to make many requests to the same value.
+For example:
+
+In order to display a list of comments whose users repeat several times, we have to call a function that makes a request to get each user's username and display it in our component. If we wrap said function with memoize function from lowdash, our original function will be called with the value argument once, and then memoize somehow memorizes it so the next time it gets called with the same argument value, the request doesn't happen because the function is saved withtin the wrapped memoize function.
+This is iseful when the component makes the same requests too many times.
+
+Our action creator changes into:
+
+```javascript
+export const fetchUsers = (id) => ( dispatch ) => {
+    _fetchUser(id, dispatch)
+}
+
+const _fetchUser = _.memoize( async(id, dispatch) => {
+    const response = await jsonPlaceholder.get(`/users/${id}`)
+
+    dispatch({ type: 'FETCH_USER', payload: response.data })
+})
+```
+
+Memoizing has a disadvantage, if we need to request one of those values again we won't be able to do it with this function since it gets called just once. So we would have to make a new function to rerender separate values if we know somehow they have changed and we want to see the new oone.
